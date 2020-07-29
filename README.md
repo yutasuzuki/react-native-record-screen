@@ -12,21 +12,28 @@ iOS Only
 npm install react-native-record-screen
 ```
 
-## Usage
-
-info.pilot
+add info.pilot
 
 ```
 <key>NSCameraUsageDescription</key>
 <string>Please allow use of camera</string>
 ```
 
+## Usage
+
 ```js
 import RecordScreen from 'react-native-record-screen';
 
-// ...
+// recording start
+RecordScreen.startRecording().catch((error) => console.error(error));
 
-const result = await RecordScreen.multiply(3, 7);
+// recording stop
+const res = await RecordScreen.stopRecording().catch((error) =>
+  console.error(error)
+);
+if (res) {
+  const url = res.result.outputURL;
+}
 ```
 
 ## Contributing
