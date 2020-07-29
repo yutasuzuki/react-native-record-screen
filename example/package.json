@@ -1,0 +1,24 @@
+{
+  "name": "react-native-record-screen-example",
+  "description": "Example app for react-native-record-screen",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start"
+  },
+  "dependencies": {
+    "react": "16.11.0",
+    "react-native": "0.62.2",
+    "react-native-camera": "^3.35.0",
+    "react-native-video": "^4.4.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/runtime": "^7.9.6",
+    "@types/react-native-video": "^5.0.1",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "metro-react-native-babel-preset": "^0.59.0"
+  }
+}
