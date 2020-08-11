@@ -19,6 +19,12 @@ add info.pilot
 <string>Please allow use of camera</string>
 ```
 
+pod install
+
+```
+cd ios && pod install && cd ../
+```
+
 ## Usage
 
 ### recording full screen
