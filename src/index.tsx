@@ -1,18 +1,17 @@
-import { NativeModules } from 'react-native';
+import { NativeModules, Dimensions } from 'react-native';
 
-type RecordScreenEditConfigType = {
+type RecordScreenCropConfigType = {
   width: number;
   height: number;
-  translateX: number;
-  translateY: number;
+  x: number;
+  y: number;
   fps: number;
 };
 
 type RecordScreenConfigType = {
-  audio: boolean;
-  width: number;
-  height: number;
-  edit?: RecordScreenEditConfigType;
+  width?: number;
+  height?: number;
+  crop?: RecordScreenCropConfigType;
 };
 
 type RecordingSuccessResponse = {
@@ -39,4 +38,38 @@ type RecordScreenType = {
 
 const { RecordScreen } = NativeModules;
 
-export default RecordScreen as RecordScreenType;
+const RS = RecordScreen as RecordScreenType;
+
+class ReactNativeRecordScreenClass {
+  private _screenWidth = Dimensions.get('window').width;
+  private _screenHeight = Dimensions.get('window').height;
+
+  setup(config: RecordScreenConfigType = {}): void {
+    const conf = Object.assign(
+      {
+        audio: true,
+        width: this._screenWidth,
+        height: this._screenHeight,
+      },
+      config
+    );
+    RS.setup(conf);
+  }
+
+  startRecording(config: RecordScreenConfigType = {}): Promise<void> {
+    this.setup(config);
+    return new Promise((resolve, reject) => {
+      RS.startRecording().then(resolve).catch(reject);
+    });
+  }
+
+  stopRecording(): Promise<RecordingResponse> {
+    return new Promise((resolve, reject) => {
+      RS.stopRecording().then(resolve).catch(reject);
+    });
+  }
+}
+
+const ReactNativeRecordScreen = new ReactNativeRecordScreenClass();
+
+export default ReactNativeRecordScreen;

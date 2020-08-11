@@ -3,7 +3,7 @@
 
 @implementation RecordScreen
 
-const int BASE_FPS = 30;
+const int DEFAULT_FPS = 30;
 
 - (NSDictionary *)errorResponse:(NSDictionary *)result;
 {
@@ -25,18 +25,15 @@ const int BASE_FPS = 30;
 
 - (void) cropMovie: (NSString *)inputFilePath resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject;
 {
-    float w = [RCTConvert float:self.edit[@"width"]];
-    float h = [RCTConvert float:self.edit[@"height"]];
-    float x = [RCTConvert float:self.edit[@"translateX"]];
-    float y = [RCTConvert float:self.edit[@"translateY"]];
-    int fps = [RCTConvert int:self.edit[@"fps"]] | BASE_FPS;
-    NSLog(@"clipMovie!");
-    NSLog(@"self.screenWidth: %d", self.screenWidth);
+    float w = [RCTConvert float:self.crop[@"width"]];
+    float h = [RCTConvert float:self.crop[@"height"]];
+    float x = [RCTConvert float:self.crop[@"x"]];
+    float y = [RCTConvert float:self.crop[@"y"]];
+    int fps = self.crop[@"fps"] ? [RCTConvert int:self.crop[@"fps"]] : DEFAULT_FPS;
+
     NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString *inputPath = [inputFilePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
     NSString *outputPath = [[path stringByAppendingPathComponent:@"result"] stringByAppendingPathExtension:@"mp4"];
-
-    NSLog(@"inputPath: %@", inputPath);
 
     AVMutableComposition *composition = [AVMutableComposition composition];
     AVMutableCompositionTrack *compositionVideoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
@@ -45,28 +42,27 @@ const int BASE_FPS = 30;
 
     NSURL *inputURL = [NSURL fileURLWithPath:inputPath];
     AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:inputURL options:nil];
-
-
     CMTimeRange range = CMTimeRangeMake(kCMTimeZero, asset.duration);
-
-    NSLog(@"asset: %@", asset);
 
     AVAssetTrack *videoTrack;
 //    AVAssetTrack *audioTrack;
-
-
 
     if ([asset tracksWithMediaType:AVMediaTypeVideo]) {
         videoTrack = [asset tracksWithMediaType:AVMediaTypeVideo][0];
         [compositionVideoTrack insertTimeRange:range ofTrack:videoTrack atTime:kCMTimeZero error:&error];
     }
 
-//    if ([asset tracksWithMediaType:AVMediaTypeAudio]) {
+//    if (isAudio) {
+//        AVMutableCompositionTrack *compositionAudioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+//        AVAssetTrack *audioTrack;
 //        audioTrack = [asset tracksWithMediaType:AVMediaTypeAudio][0];
 //        [compositionAudioTrack insertTimeRange:range ofTrack:audioTrack atTime:kCMTimeZero error:&error];
 //    }
 
-    NSLog(@"clipMovie!!");
+//    if ([asset tracksWithMediaType:AVMediaTypeAudio]) {
+//        audioTrack = [asset tracksWithMediaType:AVMediaTypeAudio][0];
+//        [compositionAudioTrack insertTimeRange:range ofTrack:audioTrack atTime:kCMTimeZero error:&error];
+//    }
 
     AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
     instruction.timeRange = range;
@@ -77,7 +73,7 @@ const int BASE_FPS = 30;
     CGAffineTransform transform = videoTrack.preferredTransform;;
 
     videoSize = CGSizeMake(w, h);
-    transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(x, y));
+    transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(x, -y));
 
     [layerInstruction setTransform:transform atTime:kCMTimeZero];
     instruction.layerInstructions = @[layerInstruction];
@@ -88,8 +84,7 @@ const int BASE_FPS = 30;
     videoComposition.frameDuration = CMTimeMake(1, fps);
 
     NSFileManager *fm = [NSFileManager defaultManager];
-    if ([fm fileExistsAtPath:outputPath])
-    {
+    if ([fm fileExistsAtPath:outputPath]) {
         [fm removeItemAtPath:outputPath error:&error];
     }
 
@@ -99,14 +94,14 @@ const int BASE_FPS = 30;
     session.videoComposition = videoComposition;
 
     [session exportAsynchronouslyWithCompletionHandler:^{
-        if (session.status == AVAssetExportSessionStatusCompleted)
-        {
+        if (session.status == AVAssetExportSessionStatusCompleted) {
             NSLog(@"output complete!");
             NSDictionary *result = [NSDictionary dictionaryWithObject:session.outputURL.absoluteString forKey:@"outputURL"];
             resolve([self successResponse:result]);
-        }
-        else
-        {
+            self.assetWriterInput = nil;
+            self.assetWriter = nil;
+            self.screenRecorder = nil;
+        } else {
             reject(@"error", @"output error", session.error);
         }
     }];
@@ -116,9 +111,9 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
 {
-    self.screenWidth = config[@"width"] ? [RCTConvert int: config[@"width"]] : 0;
-    self.screenHeight = config[@"height"] ? [RCTConvert int: config[@"height"]] : 0;
-    self.edit = config[@"edit"] ? [RCTConvert NSDictionary: config[@"edit"]] : nil;
+    self.screenWidth = [RCTConvert int: config[@"width"]];
+    self.screenHeight = [RCTConvert int: config[@"height"]];
+    self.crop = config[@"crop"] ? [RCTConvert NSDictionary: config[@"crop"]] : nil;
 }
 
 RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
@@ -151,6 +146,8 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
         // Fallback on earlier versions
     }
 
+
+
     [self.assetWriter addInput:self.assetWriterInput];
     [self.assetWriterInput setMediaTimeScale:60];
     [self.assetWriter setMovieTimeScale:60];
@@ -159,28 +156,29 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
     if (@available(iOS 11.0, *)) {
         [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (granted)
-                {
+                if (granted) {
                     [self.screenRecorder startCaptureWithHandler:^(CMSampleBufferRef  _Nonnull sampleBuffer, RPSampleBufferType bufferType, NSError * _Nullable error) {
                         if (CMSampleBufferDataIsReady(sampleBuffer)) {
+                            NSLog(@"AVAssetWriterStatusWriting! %ld", AVAssetWriterStatusWriting);
                             if (self.assetWriter.status == AVAssetWriterStatusUnknown && bufferType == RPSampleBufferTypeVideo) {
                                 [self.assetWriter startWriting];
                                 [self.assetWriter startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
                             }
-
                             if (self.assetWriter.status == AVAssetWriterStatusFailed) {
-                                NSLog(@"An error occured.");
+                                [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {
+                                    NSLog(@"self.assetWriter.status! %ld", self.assetWriter.status);
+                                    NSLog(@"AVAssetWriterStatusFailed! %ld", AVAssetWriterStatusFailed);
+                                    NSLog(@"isReadyForMoreMediaData! %d", self.assetWriterInput.isReadyForMoreMediaData);
+                                    self.assetWriterInput = nil;
+                                    self.assetWriter = nil;
+                                    self.screenRecorder = nil;
+                                }];
                                 reject(@"error", @"An error occured", error);
-                                //show alert
-                                [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {}];
                                 return;
                             }
                             if (bufferType == RPSampleBufferTypeVideo) {
                                 if (self.assetWriterInput.isReadyForMoreMediaData) {
                                     [self.assetWriterInput appendSampleBuffer:sampleBuffer];
-                                }else{
-                                    NSLog(@"Not ready for video");
-                                    reject(@"error", @"Not ready for video", error);
                                 }
                             }
                         }
@@ -190,7 +188,8 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                             [session setActive:YES error:nil];
                             // Start recording
                             NSLog(@"Recording start");
-                        }else{
+//                            resolve([NSDictionary dictionaryWithObjectsAndKeys: @"success", @"status", nil]);
+                        } else {
                             //show alert
                             reject(@"error", @"Recording not active", error);
                         }
@@ -212,18 +211,18 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
         dispatch_async(dispatch_get_main_queue(), ^{
             [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {
                 if (!error) {
-                    NSLog(@"Recording stopped successfully. Cleaning up...");
                     [self.assetWriterInput markAsFinished];
                     [self.assetWriter finishWritingWithCompletionHandler:^{
-                        if (self.edit) {
+                        if (self.crop) {
                             [self cropMovie:self.assetWriter.outputURL.relativeString resolver:resolve rejecter:reject];
                         } else {
                             NSDictionary *result = [NSDictionary dictionaryWithObject:self.assetWriter.outputURL.absoluteString forKey:@"outputURL"];
                             resolve([self successResponse:result]);
+                            self.assetWriterInput = nil;
+                            self.assetWriter = nil;
+                            self.screenRecorder = nil;
                         }
-                        self.assetWriterInput = nil;
-                        self.assetWriter = nil;
-                        self.screenRecorder = nil;
+                        NSLog(@"finishWritingWithCompletionHandler: Recording stopped successfully. Cleaning up...");
                     }];
                 }
             }];
@@ -236,4 +235,29 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
 
 }
 
+RCT_REMAP_METHOD(getRecordStatus, getRecordStatusResolve:(RCTPromiseResolveBlock)resolve getRecordStatusRejecte:(RCTPromiseRejectBlock)reject) {
+    _screenRecorder = [RPScreenRecorder sharedRecorder];
+    if (_screenRecorder.isRecording) {
+        resolve([NSDictionary dictionaryWithObjectsAndKeys:
+                 [NSNumber numberWithBool:YES], @"status", nil]);
+    } else {
+        resolve([NSDictionary dictionaryWithObjectsAndKeys:
+                 [NSNumber numberWithBool:NO], @"status", nil]);
+    }
+}
+
+//RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isRecording) {
+//  _screenRecorder = [RPScreenRecorder sharedRecorder];
+//  return _screenRecorder.isRecording && videoWriter != nil && videoWriter?.status == .writing
+//}
+
+
+//#if RCT_DEV
+//- (BOOL)bridge:(RCTBridge *)bridge didNotFindModule:(NSString *)moduleName {
+//  return YES;
+//}
+//#endif
+
 @end
+
+

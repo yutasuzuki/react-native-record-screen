@@ -12,36 +12,36 @@ import {
 import Video from 'react-native-video';
 import RecordScreen from 'react-native-record-screen';
 
-RecordScreen.setup({
-  audio: false,
-  width: Dimensions.get('window').width,
-  height: Dimensions.get('window').height,
-  edit: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height - 242,
-    translateX: 0,
-    translateY: -82,
-    fps: 24,
-  },
-});
-
 export default function App() {
   const [uri, setUri] = useState<string>('');
   const [recording, setRecording] = useState<boolean>(false);
 
   const _handleOnRecording = async () => {
     if (recording) {
+      setRecording(false);
       const res = await RecordScreen.stopRecording().catch((error) =>
-        console.error(error)
+        console.warn(error)
       );
+      console.log('res', res);
       if (res) {
         setUri(res.result.outputURL);
       }
-      setRecording(false);
     } else {
       setUri('');
       setRecording(true);
-      RecordScreen.startRecording().catch((error) => console.error(error));
+      await RecordScreen.startRecording({
+        crop: {
+          width: Dimensions.get('window').width,
+          height: Dimensions.get('window').height - 180,
+          x: 0,
+          y: 80,
+          fps: 60,
+        },
+      }).catch((error) => {
+        console.warn(error);
+        setRecording(false);
+        setUri('');
+      });
     }
   };
 
@@ -132,7 +132,7 @@ export default function App() {
           </View>
         </TouchableHighlight>
       </View>
-      {!!uri && (
+      {!!uri ? (
         <View style={styles.preview}>
           <Video
             source={{
@@ -141,7 +141,7 @@ export default function App() {
             style={styles.video}
           />
         </View>
-      )}
+      ) : null}
     </>
   );
 }
