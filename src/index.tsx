@@ -34,6 +34,7 @@ type RecordScreenType = {
   setup(config: RecordScreenConfigType): void;
   startRecording(config?: RecordScreenConfigType): Promise<void>;
   stopRecording(): Promise<RecordingResponse>;
+  clean(): Promise<string>;
 };
 
 const { RecordScreen } = NativeModules;
@@ -66,6 +67,12 @@ class ReactNativeRecordScreenClass {
   stopRecording(): Promise<RecordingResponse> {
     return new Promise((resolve, reject) => {
       RS.stopRecording().then(resolve).catch(reject);
+    });
+  }
+
+  clean(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      RS.clean().then(resolve).catch(reject);
     });
   }
 }

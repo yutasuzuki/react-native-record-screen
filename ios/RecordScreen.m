@@ -97,10 +97,10 @@ const int DEFAULT_FPS = 30;
         if (session.status == AVAssetExportSessionStatusCompleted) {
             NSLog(@"output complete!");
             NSDictionary *result = [NSDictionary dictionaryWithObject:session.outputURL.absoluteString forKey:@"outputURL"];
-            resolve([self successResponse:result]);
             self.assetWriterInput = nil;
             self.assetWriter = nil;
             self.screenRecorder = nil;
+            resolve([self successResponse:result]);
         } else {
             reject(@"error", @"output error", session.error);
         }
@@ -218,11 +218,11 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
                         } else {
                             NSDictionary *result = [NSDictionary dictionaryWithObject:self.assetWriter.outputURL.absoluteString forKey:@"outputURL"];
                             resolve([self successResponse:result]);
-                            self.assetWriterInput = nil;
-                            self.assetWriter = nil;
-                            self.screenRecorder = nil;
                         }
                         NSLog(@"finishWritingWithCompletionHandler: Recording stopped successfully. Cleaning up...");
+                        self.assetWriterInput = nil;
+                        self.assetWriter = nil;
+                        self.screenRecorder = nil;
                     }];
                 }
             }];
@@ -235,15 +235,41 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
 
 }
 
-RCT_REMAP_METHOD(getRecordStatus, getRecordStatusResolve:(RCTPromiseResolveBlock)resolve getRecordStatusRejecte:(RCTPromiseRejectBlock)reject) {
-    _screenRecorder = [RPScreenRecorder sharedRecorder];
-    if (_screenRecorder.isRecording) {
-        resolve([NSDictionary dictionaryWithObjectsAndKeys:
-                 [NSNumber numberWithBool:YES], @"status", nil]);
-    } else {
-        resolve([NSDictionary dictionaryWithObjectsAndKeys:
-                 [NSNumber numberWithBool:NO], @"status", nil]);
-    }
+//RCT_REMAP_METHOD(getRecordStatus, getRecordStatusResolve:(RCTPromiseResolveBlock)resolve getRecordStatusRejecte:(RCTPromiseRejectBlock)reject) {
+//    _screenRecorder = [RPScreenRecorder sharedRecorder];
+//    if (_screenRecorder.isRecording) {
+//        resolve([NSDictionary dictionaryWithObjectsAndKeys:
+//                 [NSNumber numberWithBool:YES], @"status", nil]);
+//    } else {
+//        resolve([NSDictionary dictionaryWithObjectsAndKeys:
+//                 [NSNumber numberWithBool:NO], @"status", nil]);
+//    }
+//}
+
+RCT_REMAP_METHOD(clean,
+                 cleanResolve:(RCTPromiseResolveBlock)resolve
+                 cleanRejecte:(RCTPromiseRejectBlock)reject)
+{
+
+    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *path = pathDocuments[0];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    resolve(@"cleaned");
+//    if (filename) {
+//        NSFileManager *fileMamager = [NSFileManager defaultManager];
+//        NSDirectoryEnumerator *enumerator = [fileMamager enumeratorAtPath:path];
+//        NSString *name;
+//        BOOL isDir;
+//        while (name = [enumerator nextObject]) {
+//            NSString *fullPath = [path stringByAppendingPathComponent:name];
+//            [fileMamager fileExistsAtPath:fullPath isDirectory:&isDir];
+//            if (!isDir) {
+//                NSLog(@"%@", fullPath);
+//            }
+//        }
+//    } else {
+//        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+//    }
 }
 
 //RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(isRecording) {

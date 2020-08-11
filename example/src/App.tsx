@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableHighlight,
+  Button,
 } from 'react-native';
 import Video from 'react-native-video';
 import RecordScreen from 'react-native-record-screen';
@@ -45,6 +46,10 @@ export default function App() {
     }
   };
 
+  const _handleOnCleanSandbox = useCallback(() => {
+    RecordScreen.clean();
+  }, []);
+
   const btnStyle = useMemo(() => {
     return recording ? styles.btnActive : styles.btnDefault;
   }, [recording]);
@@ -53,11 +58,16 @@ export default function App() {
     <>
       <StatusBar barStyle="light-content" />
       <View style={styles.navbar}>
+        <View />
         {recording ? (
           <View style={styles.recordingMark}>
             <Text style={styles.recordingMarkText}>Recording</Text>
           </View>
-        ) : null}
+        ) : (
+          <View>
+            <Button onPress={_handleOnCleanSandbox} title="Clean Sandbox" />
+          </View>
+        )}
       </View>
       <SafeAreaView style={styles.container}>
         <ScrollView>

@@ -27,7 +27,7 @@ cd ios && pod install && cd ../
 
 ## Usage
 
-### recording full screen
+### Recording full screen
 
 ```js
 import RecordScreen from 'react-native-record-screen';
@@ -44,7 +44,7 @@ if (res) {
 }
 ```
 
-### croped screen
+### Croped screen
 
 ```js
 // set up RecordScreen
@@ -91,6 +91,12 @@ const res = await RecordScreen.stopRecording().catch((error) =>
 if (res) {
   const url = res.result.outputURL;
 }
+```
+
+### Clean Sandbox
+
+```js
+RecordScreen.clean();
 ```
 
 ## Contributing
