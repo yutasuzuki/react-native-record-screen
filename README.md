@@ -47,7 +47,7 @@ RecordScreen.setup({
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height - 180,
     x: 0,
-    y: -80,
+    y: 80,
     fps: 24,
   },
 });
@@ -73,7 +73,7 @@ RecordScreen.startRecording({
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height - 180,
     x: 0,
-    y: -80,
+    y: 80,
     fps: 24,
   },
 }).catch((error) => console.error(error));
