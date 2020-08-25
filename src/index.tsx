@@ -1,4 +1,4 @@
-import { NativeModules, Dimensions } from 'react-native';
+import { NativeModules, Dimensions, PermissionsAndroid } from 'react-native';
 
 type RecordScreenCropConfigType = {
   width: number;
@@ -57,8 +57,29 @@ class ReactNativeRecordScreenClass {
     RS.setup(conf);
   }
 
-  startRecording(config: RecordScreenConfigType = {}): Promise<void> {
-    this.setup(config);
+  async startRecording(config: RecordScreenConfigType = {}): Promise<void> {
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      {
+        title: 'Cool Photo App Camera Permission',
+        message:
+          'Cool Photo App needs access to your camera ' +
+          'so you can take awesome pictures.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      }
+    );
+    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
+      title: 'Cool Photo App Camera Permission',
+      message:
+        'Cool Photo App needs access to your camera ' +
+        'so you can take awesome pictures.',
+      buttonNeutral: 'Ask Me Later',
+      buttonNegative: 'Cancel',
+      buttonPositive: 'OK',
+    });
+    Object.keys(config).length && this.setup(config);
     return new Promise((resolve, reject) => {
       RS.startRecording().then(resolve).catch(reject);
     });
