@@ -1,115 +1,140 @@
 package com.reactnativerecordscreen
 
-import android.hardware.display.VirtualDisplay
-import android.media.MediaRecorder
-import android.media.projection.MediaProjection
+import android.app.Activity
+import android.app.Application
+import android.content.Context
+import android.content.Intent
 import android.media.projection.MediaProjectionManager
-import android.os.Environment
-import android.view.WindowManager
+import android.os.Build
+import android.util.SparseIntArray
+import android.view.Surface
+import androidx.appcompat.app.AppCompatActivity
 import com.facebook.react.bridge.*
+import com.hbisoft.hbrecorder.HBRecorder
+import com.hbisoft.hbrecorder.HBRecorderListener
+import java.io.File
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.math.ceil
 
-class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
-    private var screenDensity: Int = 0;
-    private var projectManager: MediaProjectionManager? = null;
-    private var mediaProjection: MediaProjection? = null;
-    private var virtualDisplay: VirtualDisplay? = null;
-    private var mediaProjectionCallback: MediaProjectionCallback? = null;
-    private var mediaRecorder: MediaRecorder? = null;
-      private var windowManager: WindowManager? = null
+class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), HBRecorderListener {
 
-    private var screenWidth: Number = 0;
-    private var screenHeight: Number = 0;
-    private var crop: ReadableMap? = null;
+  private var hbRecorder: HBRecorder? = null;
+  private var screenWidth: Number = 0;
+  private var screenHeight: Number = 0;
+  private var crop: ReadableMap? = null;
+  private var currentVersion: String = "";
+  private var outputUri: File? = null;
+  private var startPromise: Promise? = null
 
-    internal var videoUri: String = "";
+  companion object {
+    private val ORIENTATIONS = SparseIntArray();
+    const val SCREEN_RECORD_REQUEST_CODE = 1000;
 
-    override fun getName(): String {
-        return "RecordScreen"
+    init {
+      ORIENTATIONS.append(Surface.ROTATION_0, 90);
+      ORIENTATIONS.append(Surface.ROTATION_90, 0);
+      ORIENTATIONS.append(Surface.ROTATION_180, 270);
+      ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+  }
 
-    inner class MediaProjectionCallback: MediaProjection.Callback() {
-      override fun onStop() {
-        // ボタンが押されたら
-        // super.onStop()
-        mediaRecorder!!.stop();
-        mediaRecorder!!.reset();
+  override fun getName(): String {
+    return "RecordScreen"
+  }
 
-        mediaProjection = null;
-
-      }
-    }
-
-
-    @ReactMethod
-    fun setup(readableMap: ReadableMap) {
-      screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width") as Double).toInt() else 0;
-      screenHeight = if (readableMap.hasKey("height")) ceil(readableMap.getDouble("height") as Double).toInt() else 0;
-      crop =  if (readableMap.hasKey("crop")) readableMap.getMap("crop") else null;
-
-      println(screenWidth as Int);
-      println(screenHeight as Int);
-      println(crop?.getDouble("fps"));
-    }
-
-    @ReactMethod
-    fun startRecording(promise: Promise) {
-      mediaRecorder = MediaRecorder()
-      try {
-        mediaRecorder!!.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-        mediaRecorder!!.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        videoUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-          .toString() + StringBuilder("/")
-          .append("EDMT_Record_")
-          .append(SimpleDateFormat("dd-MM-yyyy-hh_mm_ss").format(Date()))
-          .append(".mp4")
-          .toString();
-
-        println(videoUri);
-
-        mediaRecorder!!.setOutputFile(videoUri);
-        mediaRecorder!!.setVideoSize(screenWidth as Int, screenHeight as Int);
-        mediaRecorder!!.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        mediaRecorder!!.setVideoEncodingBitRate(512 * 1000);
-        mediaRecorder!!.setVideoFrameRate(crop?.getDouble("fps")?.toInt() as Int);
-
-        try {
-          mediaRecorder!!.prepare()
-          mediaRecorder!!.start();
-          promise.resolve(null);
-        } catch (e: IOException) {
-          promise.reject("error", "error");
+  private val mActivityEventListener: ActivityEventListener = object : BaseActivityEventListener() {
+    override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, intent: Intent?) {
+      println("resultCode")
+      println(resultCode)
+      println("AppCompatActivity.RESULT_OK")
+      println(AppCompatActivity.RESULT_OK)
+      if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+          hbRecorder!!.startScreenRecording(intent, resultCode, Activity());
+        } else {
+          startPromise!!.reject("404", "cancel!!");
         }
-
-
-        println("startRecording");
-
-      } catch (e: IOException) {
-        e.printStackTrace();
+      } else {
+        startPromise!!.reject("404", "cancel!");
       }
+      startPromise!!.resolve(true);
     }
+  }
 
-    @ReactMethod
-    fun stopRecording(promise: Promise) {
-      println("stopRecording");
-      val response = WritableNativeMap();
-      val result =  WritableNativeMap();
-      result.putString("outputUrl", "hogehoge");
-      response.putString("status", "success");
-      response.putMap("result", result);
-      mediaRecorder!!.stop();
-      promise.resolve(response);
+  override fun initialize() {
+    super.initialize()
+    currentVersion = Build.VERSION.SDK_INT.toString()
+    outputUri = reactApplicationContext.getExternalFilesDir("ReactNativeRecordScreen");
+  }
 
+  @ReactMethod
+  fun setup(readableMap: ReadableMap) {
+    Application().onCreate()
+    screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width")).toInt() else 0;
+    screenHeight = if (readableMap.hasKey("height")) ceil(readableMap.getDouble("height")).toInt() else 0;
+    crop =  if (readableMap.hasKey("crop")) readableMap.getMap("crop") else null;
+    hbRecorder = HBRecorder(reactApplicationContext, this);
+    hbRecorder!!.setOutputPath(outputUri.toString());
+    reactApplicationContext.addActivityEventListener(mActivityEventListener);
+  }
+
+  private fun startRecordingScreen() {
+    val mediaProjectionManager = reactApplicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager;
+    val permissionIntent = mediaProjectionManager.createScreenCaptureIntent();
+    currentActivity!!.startActivityForResult(permissionIntent, SCREEN_RECORD_REQUEST_CODE);
+  }
+
+
+  @ReactMethod
+  fun startRecording(promise: Promise) {
+    startPromise = promise;
+    try {
+      startRecordingScreen();
+      println("startRecording");
+    } catch (e: IllegalStateException) {
+      promise.reject("404", "error!");
+      println(e.toString());
+    } catch (e: IOException) {
+      println(e);
+      e.printStackTrace();
+      promise.reject("404", "error!!");
     }
+  }
 
-    @ReactMethod
-    fun clean(promise: Promise) {
-      println("clean");
-      promise.resolve(null);
-    }
+  @ReactMethod
+  fun stopRecording(promise: Promise) {
+    println("stopRecording");
+    hbRecorder!!.stopScreenRecording();
+    var uri = hbRecorder!!.filePath;
+    val response = WritableNativeMap();
+    val result =  WritableNativeMap();
+    result.putString("outputURL", uri);
+    response.putString("status", "success");
+    response.putMap("result", result);
+    promise.resolve(response);
+  }
 
+  @ReactMethod
+  fun clean(promise: Promise) {
+    println("clean");
+    outputUri!!.delete();
+    promise.resolve("cleaned");
+  }
+
+  override fun HBRecorderOnStart() {
+    println("HBRecorderOnStart")
+  }
+
+  override fun HBRecorderOnComplete() {
+    println("HBRecorderOnComplete")
+  }
+
+  override fun HBRecorderOnError(errorCode: Int, reason: String?) {
+    println("HBRecorderOnError")
+    println("errorCode")
+    println(errorCode)
+    println("reason")
+    println(reason)
+  }
 }

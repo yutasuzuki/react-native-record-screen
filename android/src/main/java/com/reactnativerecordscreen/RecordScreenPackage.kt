@@ -2,6 +2,7 @@ package com.reactnativerecordscreen
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.facebook.react.ReactActivity
 import java.util.Arrays
 import java.util.Collections
 
@@ -20,19 +21,19 @@ class RecordScreenPackage : ReactPackage, AppCompatActivity() {
         return emptyList<ViewManager<*, *>>()
     }
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState);
-    println("onCreate");
-  }
-  override fun onStart() {
-    super.onStart()
-  }
-
-  override fun onPause() {
-    super.onPause()
-  }
-
-  override fun onStop() {
-    super.onStop()
-  }
+//  override fun onCreate(savedInstanceState: Bundle?) {
+//    super.onCreate(savedInstanceState);
+//    println("onCreate");
+//  }
+//  override fun onStart() {
+//    super.onStart()
+//  }
+//
+//  override fun onPause() {
+//    super.onPause()
+//  }
+//
+//  override fun onStop() {
+//    super.onStop()
+//  }
 }
