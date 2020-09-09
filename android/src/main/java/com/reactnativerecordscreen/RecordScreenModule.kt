@@ -25,7 +25,8 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
   private var crop: ReadableMap? = null;
   private var currentVersion: String = "";
   private var outputUri: File? = null;
-  private var startPromise: Promise? = null
+  private var startPromise: Promise? = null;
+  private var stopPromise: Promise? = null;
 
   companion object {
     private val ORIENTATIONS = SparseIntArray();
@@ -104,15 +105,8 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   @ReactMethod
   fun stopRecording(promise: Promise) {
-    println("stopRecording");
+    stopPromise = promise
     hbRecorder!!.stopScreenRecording();
-    var uri = hbRecorder!!.filePath;
-    val response = WritableNativeMap();
-    val result =  WritableNativeMap();
-    result.putString("outputURL", uri);
-    response.putString("status", "success");
-    response.putMap("result", result);
-    promise.resolve(response);
   }
 
   @ReactMethod
@@ -128,6 +122,13 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   override fun HBRecorderOnComplete() {
     println("HBRecorderOnComplete")
+    var uri = hbRecorder!!.filePath;
+    val response = WritableNativeMap();
+    val result =  WritableNativeMap();
+    result.putString("outputURL", uri);
+    response.putString("status", "success");
+    response.putMap("result", result);
+    stopPromise!!.resolve(response);
   }
 
   override fun HBRecorderOnError(errorCode: Int, reason: String?) {
