@@ -37,24 +37,24 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     }
 
     private val mActivityEventListener: ActivityEventListener = object : BaseActivityEventListener() {
-        override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent) {
-            if (requestCode != REQUEST_CODE) {
-                return
-            }
-
-            if (resultCode != RESULT_OK) {
-                return
-            }
-
-            mediaProjection = projectManager!!.getMediaProjection(resultCode, data)
-            mediaProjection!!.registerCallback(MediaProjectionCallback(), null)
-            virtualDisplay = createVirtualDisplay()
-            mediaRecorder?.start()
+      override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent) {
+        if (requestCode != REQUEST_CODE) {
+            return
         }
+
+        if (resultCode != RESULT_OK) {
+            return
+        }
+
+        mediaProjection = projectManager!!.getMediaProjection(resultCode, data)
+        mediaProjection!!.registerCallback(MediaProjectionCallback(), null)
+        virtualDisplay = createVirtualDisplay()
+        mediaRecorder?.start()
+      }
     }
 
     init {
-        reactContext.addActivityEventListener(mActivityEventListener);
+      reactContext.addActivityEventListener(mActivityEventListener);
     }
 
     inner class MediaProjectionCallback: MediaProjection.Callback() {
@@ -69,7 +69,6 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
       }
     }
 
-
     @ReactMethod
     fun setup(readableMap: ReadableMap) {
       screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width") as Double).toInt() else 0;
@@ -77,78 +76,75 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
       crop =  if (readableMap.hasKey("crop")) readableMap.getMap("crop") else null;
       projectManager = this.reactApplicationContext.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-        val metrics = DisplayMetrics()
-        reactApplicationContext.currentActivity?.windowManager?.defaultDisplay?.getMetrics(metrics)
-        screenDensity = metrics.densityDpi
+      val metrics = DisplayMetrics()
+      reactApplicationContext.currentActivity?.windowManager?.defaultDisplay?.getMetrics(metrics)
+      screenDensity = metrics.densityDpi
     }
 
     private fun createVirtualDisplay(): VirtualDisplay? {
-        println(screenWidth)
-        println(screenHeight)
-        println(screenDensity)
-        return mediaProjection?.createVirtualDisplay("ScreenSharingDemo",
-                screenWidth as Int, screenHeight as Int, screenDensity,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                mediaRecorder?.getSurface(), null /*Callbacks*/, null /*Handler*/)
+      return mediaProjection?.createVirtualDisplay("ScreenSharingDemo",
+              screenWidth as Int, screenHeight as Int, screenDensity,
+              DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+              mediaRecorder?.getSurface(), null /*Callbacks*/, null /*Handler*/)
     }
 
     private fun shareScreen() {
-        if (mediaProjection == null) {
-            val i = projectManager!!.createScreenCaptureIntent()
-            this.currentActivity!!.startActivityForResult(i, REQUEST_CODE)
-            return
-        }
-        virtualDisplay = createVirtualDisplay()
-        mediaRecorder!!.start()
+      if (mediaProjection == null) {
+        val i = projectManager!!.createScreenCaptureIntent()
+        this.currentActivity!!.startActivityForResult(i, REQUEST_CODE)
+        return
+      }
+
+      virtualDisplay = createVirtualDisplay()
+      mediaRecorder!!.start()
     }
 
     @ReactMethod
     fun startRecording(promise: Promise) {
-        initRecorder()
-        shareScreen()
+      initRecorder()
+      shareScreen()
     }
 
     private fun initRecorder() {
-        try {
-            mediaRecorder = MediaRecorder()
-            mediaRecorder!!.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder!!.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-            mediaRecorder!!.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+      try {
+        mediaRecorder = MediaRecorder()
+        mediaRecorder!!.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder!!.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+        mediaRecorder!!.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
 
-            videoUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    .toString() + StringBuilder("/")
-                    .append("EDMT_Record_")
-                    .append(SimpleDateFormat("dd-MM-yyyy-hh_mm_ss").format(Date()))
-                    .append(".mp4")
-                    .toString();
+        videoUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                .toString() + StringBuilder("/")
+                .append("EDMT_Record_")
+                .append(SimpleDateFormat("dd-MM-yyyy-hh_mm_ss").format(Date()))
+                .append(".mp4")
+                .toString();
 
-            mediaRecorder!!.setOutputFile(videoUri)
-            mediaRecorder!!.setVideoSize(screenWidth as Int, screenHeight as Int)
-            mediaRecorder!!.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            mediaRecorder!!.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-            mediaRecorder!!.setVideoEncodingBitRate(512 * 1024)
-            mediaRecorder!!.setVideoFrameRate(24)
-            mediaRecorder!!.prepare()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        mediaRecorder!!.setOutputFile(videoUri)
+        mediaRecorder!!.setVideoSize(screenWidth as Int, screenHeight as Int)
+        mediaRecorder!!.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mediaRecorder!!.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+        mediaRecorder!!.setVideoEncodingBitRate(512 * 1024)
+        mediaRecorder!!.setVideoFrameRate(24)
+        mediaRecorder!!.prepare()
+      } catch (e: IOException) {
+        e.printStackTrace()
+      }
     }
 
     @ReactMethod
     fun stopRecording(promise: Promise) {
-        try {
-            val response = WritableNativeMap();
-            val result = WritableNativeMap();
-            result.putString("videoUrl", videoUri);
-            response.putString("status", "success");
-            response.putMap("result", result);
-            mediaRecorder!!.stop();
-            mediaRecorder!!.release();
-            promise.resolve(response);
-        } catch (err: RuntimeException) {
-            err.printStackTrace();
-        }
-
+      try {
+        val response = WritableNativeMap();
+        val result = WritableNativeMap();
+        result.putString("videoUrl", videoUri);
+        response.putString("status", "success");
+        response.putMap("result", result);
+        mediaRecorder!!.stop();
+        mediaRecorder!!.release();
+        promise.resolve(response);
+      } catch (err: RuntimeException) {
+        err.printStackTrace();
+      }
     }
 
     @ReactMethod

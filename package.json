@@ -1,5 +1,5 @@
 {
-  "name": "@beattv/react-native-record-screen",
+  "name": "@beapp/react-native-record-screen",
   "version": "0.2.0",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
@@ -34,7 +34,10 @@
     "ios",
     "replaykit"
   ],
-  "repository": "https://github.com/yutasuzuki/react-native-record-screen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yutasuzuki/react-native-record-screen.git"
+  },
   "author": "Yuta Suzuki <yutasuzuki.r@gmail.com> (https://github.com/yutasuzuki)",
   "license": "MIT",
   "bugs": {
@@ -138,5 +141,9 @@
       "module",
       "typescript"
     ]
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {}
 }
