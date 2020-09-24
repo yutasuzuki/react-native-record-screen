@@ -5,11 +5,14 @@
 @interface RecordScreen : NSObject <RCTBridgeModule>
 
     @property (strong, nonatomic) RPScreenRecorder *screenRecorder;
-    @property (strong, nonatomic) RPPreviewViewController *previewViewController;
-    @property (strong, nonatomic) AVAssetWriter *assetWriter;
-    @property (strong, nonatomic) AVAssetWriterInput *assetWriterInput;
+    @property (strong, nonatomic) AVAssetWriterInput *videoInput;
+    @property (strong, nonatomic) AVAssetWriterInput *audioInput;
+    @property (strong, nonatomic) AVAssetWriterInput *micInput;
     @property (assign, nonatomic) int screenWidth;
     @property (assign, nonatomic) int screenHeight;
-    @property (strong, nonatomic) NSDictionary *crop;
+    @property (assign, nonatomic) BOOL enableMic;
+
+    @property (nonatomic) AVAssetWriter *writer;
+    @property BOOL encounteredFirstBuffer;
 
 @end

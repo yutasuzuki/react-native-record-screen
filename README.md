@@ -61,19 +61,15 @@ if (res) {
 }
 ```
 
-### Crop screen(iOS Only)
+### Setting microphone
+
+default true.
 
 ```js
-// recording start
-RecordScreen.startRecording({
-  crop: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height - 180,
-    x: 0,
-    y: 80,
-    fps: 24,
-  },
-}).catch((error) => console.error(error));
+// mic off
+RecordScreen.startRecording({ mic: false }).catch((error) =>
+  console.error(error)
+);
 
 // recording stop
 const res = await RecordScreen.stopRecording().catch((error) =>
@@ -89,6 +85,11 @@ if (res) {
 ```js
 RecordScreen.clean();
 ```
+
+## About video cropping
+
+The video cropping feature has been removed.
+Video crops will be created as another library.
 
 ## License
 

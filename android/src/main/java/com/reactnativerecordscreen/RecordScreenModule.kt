@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.media.MediaCodecList
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.util.SparseIntArray
@@ -22,7 +23,7 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
   private var hbRecorder: HBRecorder? = null;
   private var screenWidth: Number = 0;
   private var screenHeight: Number = 0;
-  private var crop: ReadableMap? = null;
+  private var mic: Boolean = true;
   private var currentVersion: String = "";
   private var outputUri: File? = null;
   private var startPromise: Promise? = null;
@@ -74,9 +75,15 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     Application().onCreate()
     screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width")).toInt() else 0;
     screenHeight = if (readableMap.hasKey("height")) ceil(readableMap.getDouble("height")).toInt() else 0;
-    crop =  if (readableMap.hasKey("crop")) readableMap.getMap("crop") else null;
+    mic =  if (readableMap.hasKey("mic")) readableMap.getBoolean("mic") else true;
     hbRecorder = HBRecorder(reactApplicationContext, this);
     hbRecorder!!.setOutputPath(outputUri.toString());
+    if(doesSupportEncoder("h264")){
+      hbRecorder!!.setVideoEncoder("H264");
+    }else{
+      hbRecorder!!.setVideoEncoder("DEFAULT");
+    }
+    hbRecorder!!.isAudioEnabled(mic);
     reactApplicationContext.addActivityEventListener(mActivityEventListener);
   }
 
@@ -137,5 +144,20 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     println(errorCode)
     println("reason")
     println(reason)
+  }
+
+  private fun doesSupportEncoder(encoder: String): Boolean {
+    val numCodecs = MediaCodecList.getCodecCount()
+    for (i in 0 until numCodecs) {
+      val codecInfo = MediaCodecList.getCodecInfoAt(i)
+      if (codecInfo.isEncoder) {
+        if (codecInfo.name != null) {
+          if (codecInfo.name.contains(encoder)) {
+            return true
+          }
+        }
+      }
+    }
+    return false
   }
 }

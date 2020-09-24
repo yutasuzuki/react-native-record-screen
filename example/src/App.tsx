@@ -30,15 +30,7 @@ export default function App() {
     } else {
       setUri('');
       setRecording(true);
-      await RecordScreen.startRecording({
-        crop: {
-          width: Dimensions.get('window').width,
-          height: Dimensions.get('window').height - 180,
-          x: 0,
-          y: 80,
-          fps: 60,
-        },
-      }).catch((error) => {
+      await RecordScreen.startRecording().catch((error) => {
         console.warn(error);
         setRecording(false);
         setUri('');

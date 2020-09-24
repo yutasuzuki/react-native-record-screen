@@ -1,17 +1,7 @@
 import { NativeModules, Dimensions } from 'react-native';
 
-type RecordScreenCropConfigType = {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  fps: number;
-};
-
 type RecordScreenConfigType = {
-  width?: number;
-  height?: number;
-  crop?: RecordScreenCropConfigType;
+  mic?: boolean;
 };
 
 type RecordingSuccessResponse = {
@@ -48,7 +38,7 @@ class ReactNativeRecordScreenClass {
   setup(config: RecordScreenConfigType = {}): void {
     const conf = Object.assign(
       {
-        audio: true,
+        mic: true,
         width: this._screenWidth,
         height: this._screenHeight,
       },
@@ -58,7 +48,7 @@ class ReactNativeRecordScreenClass {
   }
 
   async startRecording(config: RecordScreenConfigType = {}): Promise<void> {
-    Object.keys(config).length && this.setup(config);
+    this.setup(config);
     return new Promise((resolve, reject) => {
       RS.startRecording().then(resolve).catch(reject);
     });
