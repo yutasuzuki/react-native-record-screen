@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>ja_JP</string>
 	<key>CFBundleDisplayName</key>
 	<string>RecordScreen Example</string>
 	<key>CFBundleExecutable</key>
@@ -37,10 +37,10 @@
 			</dict>
 		</dict>
 	</dict>
-  <key>NSCameraUsageDescription</key>
-  <string>Please allow use of camera</string>
-  <key>NSMicrophoneUsageDescription</key>
-  <string>Please allow use of microphone</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Please allow use of camera</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Please allow use of microphone</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>

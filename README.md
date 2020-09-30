@@ -2,7 +2,7 @@
 
 A screen record module for React Native.
 
-- Support iOS >= 11.0
+- Support iOS >= 11.0 (Simulator is not work)
 
 - Support Android
   - minSdkVersion = 26
@@ -23,6 +23,8 @@ add info.pilot
 ```
 <key>NSCameraUsageDescription</key>
 <string>Please allow use of camera</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Please allow use of microphone</string>
 ```
 
 pod install
