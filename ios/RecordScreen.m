@@ -41,6 +41,16 @@ const int DEFAULT_FPS = 30;
     }
 }
 
+// H264は2または4の倍数の数値にしないと緑の縁が入ってしまうので、それを調整する関数
+- (int) adjustMultipleOf2:(int)value;
+{
+    if (value % 2 == 1) {
+        return value + 1;
+    }
+    return value;
+}
+
+
 RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
@@ -85,11 +95,13 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                             AVVideoMaxKeyFrameIntervalKey  : @60,
                                             AVVideoAllowFrameReorderingKey : @NO};
 
+    NSLog(@"width: %d", [self adjustMultipleOf2:self.screenWidth]);
+    NSLog(@"height: %d", [self adjustMultipleOf2:self.screenHeight]);
     if (@available(iOS 11.0, *)) {
         NSDictionary *videoSettings = @{AVVideoCompressionPropertiesKey : compressionProperties,
                                         AVVideoCodecKey                 : AVVideoCodecTypeH264,
-                                        AVVideoWidthKey                 : @(self.screenWidth),
-                                        AVVideoHeightKey                : @(self.screenHeight)};
+                                        AVVideoWidthKey                 : @([self adjustMultipleOf2:self.screenWidth]),
+                                        AVVideoHeightKey                : @([self adjustMultipleOf2:self.screenHeight])};
 
         self.videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
     } else {

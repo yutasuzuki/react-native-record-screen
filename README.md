@@ -30,7 +30,7 @@ add info.pilot
 pod install
 
 ```sh
-cd ios && pod install && cd ../
+npx pod-install
 ```
 
 ### Android
@@ -38,10 +38,10 @@ cd ios && pod install && cd ../
 AndroidManifest.xml
 
 ```
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.RECORD_AUDIO" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 ```
 
 ## Usage
