@@ -1,28 +1,32 @@
 import { NativeModules, Dimensions } from 'react-native';
 
-type RecordScreenConfigType = {
+export type RecordingStartResponse = 'started';
+
+export type RecordScreenConfigType = {
   mic?: boolean;
 };
 
-type RecordingSuccessResponse = {
+export type RecordingSuccessResponse = {
   status: 'success';
   result: {
     outputURL: string;
   };
 };
 
-type RecordingErrorResponse = {
+export type RecordingErrorResponse = {
   status: 'error';
-  result: {
-    outputURL: string;
-  };
+  result: any;
 };
 
-type RecordingResponse = RecordingSuccessResponse | RecordingErrorResponse;
+export type RecordingResponse =
+  | RecordingSuccessResponse
+  | RecordingErrorResponse;
 
 type RecordScreenType = {
   setup(config: RecordScreenConfigType): void;
-  startRecording(config?: RecordScreenConfigType): Promise<void>;
+  startRecording(
+    config?: RecordScreenConfigType
+  ): Promise<RecordingStartResponse>;
   stopRecording(): Promise<RecordingResponse>;
   clean(): Promise<string>;
 };
@@ -47,7 +51,9 @@ class ReactNativeRecordScreenClass {
     RS.setup(conf);
   }
 
-  async startRecording(config: RecordScreenConfigType = {}): Promise<void> {
+  async startRecording(
+    config: RecordScreenConfigType = {}
+  ): Promise<RecordingStartResponse> {
     this.setup(config);
     return new Promise((resolve, reject) => {
       RS.startRecording().then(resolve).catch(reject);

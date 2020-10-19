@@ -134,7 +134,7 @@ export default function App() {
           </View>
         </TouchableHighlight>
       </View>
-      {!!uri ? (
+      {uri ? (
         <View style={styles.preview}>
           <Video
             source={{
