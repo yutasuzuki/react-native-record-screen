@@ -30,7 +30,7 @@ export default function App() {
     } else {
       setUri('');
       setRecording(true);
-      await RecordScreen.startRecording().catch((error) => {
+      await RecordScreen.startRecording({ mic: false }).catch((error) => {
         console.warn(error);
         setRecording(false);
         setUri('');

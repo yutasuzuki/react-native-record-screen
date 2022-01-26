@@ -118,7 +118,8 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   @ReactMethod
   fun clean(promise: Promise) {
-    println("clean");
+    println("clean!!");
+    println(outputUri);
     outputUri!!.delete();
     promise.resolve("cleaned");
   }
