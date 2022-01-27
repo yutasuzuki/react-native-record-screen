@@ -118,7 +118,8 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   @ReactMethod
   fun clean(promise: Promise) {
-    println("clean");
+    println("clean!!");
+    println(outputUri);
     outputUri!!.delete();
     promise.resolve("cleaned");
   }
@@ -147,14 +148,13 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
   }
 
   private fun doesSupportEncoder(encoder: String): Boolean {
-    val numCodecs = MediaCodecList.getCodecCount()
-    for (i in 0 until numCodecs) {
-      val codecInfo = MediaCodecList.getCodecInfoAt(i)
+    val list = MediaCodecList(MediaCodecList.ALL_CODECS).codecInfos
+    val size = list.size
+    for (i in 0 until size) {
+      val codecInfo = list[i]
       if (codecInfo.isEncoder) {
-        if (codecInfo.name != null) {
-          if (codecInfo.name.contains(encoder)) {
-            return true
-          }
+        if (codecInfo!!.name.contains(encoder)) {
+          return true
         }
       }
     }

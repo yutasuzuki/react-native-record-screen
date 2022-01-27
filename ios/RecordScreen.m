@@ -220,8 +220,10 @@ RCT_REMAP_METHOD(clean,
 
     NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *path = pathDocuments[0];
+    NSLog(@"startCapture: %@", path);
     [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
     resolve(@"cleaned");
 }
 
 @end
+
