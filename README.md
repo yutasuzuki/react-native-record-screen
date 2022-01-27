@@ -88,11 +88,6 @@ if (res) {
 RecordScreen.clean();
 ```
 
-## About video cropping
-
-The video cropping feature has been removed.
-Video crops will be created as another library.
-
 ## License
 
 MIT

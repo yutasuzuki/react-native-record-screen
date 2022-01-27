@@ -13,13 +13,13 @@ import com.facebook.react.uimanager.ViewManager
 import com.facebook.react.bridge.JavaScriptModule
 
 class RecordScreenPackage : ReactPackage, AppCompatActivity() {
-    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return Arrays.asList<NativeModule>(RecordScreenModule(reactContext))
-    }
+  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
+    return Arrays.asList<NativeModule>(RecordScreenModule(reactContext))
+  }
 
-    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return emptyList<ViewManager<*, *>>()
-    }
+  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+    return emptyList<ViewManager<*, *>>()
+  }
 
 //  override fun onCreate(savedInstanceState: Bundle?) {
 //    super.onCreate(savedInstanceState);

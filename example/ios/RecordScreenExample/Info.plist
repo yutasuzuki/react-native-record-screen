@@ -37,10 +37,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Please allow use of camera</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Please allow use of microphone</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>
@@ -49,6 +45,10 @@
 	<array>
 		<string>armv7</string>
 	</array>
+  <key>NSCameraUsageDescription</key>
+  <string>Please allow use of camera</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Please allow use of microphone</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

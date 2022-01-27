@@ -20,7 +20,7 @@ export default function App() {
   const _handleOnRecording = async () => {
     if (recording) {
       setRecording(false);
-      const res = await RecordScreen.stopRecording().catch((error) =>
+      const res = await RecordScreen.stopRecording().catch((error: any) =>
         console.warn(error)
       );
       console.log('res', res);
@@ -30,7 +30,7 @@ export default function App() {
     } else {
       setUri('');
       setRecording(true);
-      await RecordScreen.startRecording({ mic: false }).catch((error) => {
+      await RecordScreen.startRecording({ mic: false }).catch((error: any) => {
         console.warn(error);
         setRecording(false);
         setUri('');
