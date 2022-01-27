@@ -37,7 +37,7 @@
     "android"
   ],
   "repository": "https://github.com/yutasuzuki/react-native-record-screen",
-  "author": "Yuta Suzuki <yutasuzuki.r@gmail.com> (https://0ops.dev/)",
+  "author": "Yuta Suzuki <yutasuzuki.r@gmail.com> (https://github.com/yutasuzuki)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/yutasuzuki/react-native-record-screen/issues"
