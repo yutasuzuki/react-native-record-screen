@@ -20,11 +20,12 @@ A screen record module for React Native.
 npm install react-native-record-screen
 ```
 
-add info.pilot
+Add the permission strings to your Info.plist
 
-```
+```xml
 <key>NSCameraUsageDescription</key>
 <string>Please allow use of camera</string>
+<!-- If you intend to use the microphone -->
 <key>NSMicrophoneUsageDescription</key>
 <string>Please allow use of microphone</string>
 ```
@@ -37,13 +38,14 @@ npx pod-install
 
 ### Android
 
-AndroidManifest.xml
+Add the permissions to your AndroidManifest.xml
 
-```
+```xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<!-- If you intend to use the microphone -->
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
 ## Usage
