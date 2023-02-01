@@ -53,10 +53,13 @@ Add the permissions to your AndroidManifest.xml
 ### Recording full screen
 
 ```js
-import RecordScreen from 'react-native-record-screen';
+import RecordScreen, { RecordingStartResponse } from 'react-native-record-screen';
 
 // recording start
-RecordScreen.startRecording().catch((error) => console.error(error));
+const res = RecordScreen.startRecording().catch((error) => console.error(error));
+if (res === RecordingStartResponse.PermissionError) {
+  // user denies access
+}
 
 // recording stop
 const res = await RecordScreen.stopRecording().catch((error) =>
