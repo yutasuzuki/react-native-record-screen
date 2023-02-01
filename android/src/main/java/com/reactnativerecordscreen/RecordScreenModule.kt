@@ -76,11 +76,28 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width")).toInt() else 0;
     screenHeight = if (readableMap.hasKey("height")) ceil(readableMap.getDouble("height")).toInt() else 0;
     mic =  if (readableMap.hasKey("mic")) readableMap.getBoolean("mic") else true;
+
     hbRecorder = HBRecorder(reactApplicationContext, this);
     hbRecorder!!.setOutputPath(outputUri.toString());
-    if(doesSupportEncoder("h264")){
+
+    // For FPS and bitrate we need to enable custom settings
+    if (readableMap.hasKey("fps") || readableMap.hasKey("bitrate")) {
+      hbRecorder!!.enableCustomSettings();
+
+      if (readableMap.hasKey("fps")) {
+        val fps = readableMap.getInt("fps");
+        hbRecorder!!.setVideoFrameRate(fps);
+      }
+      if (readableMap.hasKey("bitrate")) {
+        val bitrate = readableMap.getInt("bitrate");
+        hbRecorder!!.setVideoBitrate(bitrate);
+      }
+    }
+
+
+    if (doesSupportEncoder("h264")) {
       hbRecorder!!.setVideoEncoder("H264");
-    }else{
+    } else {
       hbRecorder!!.setVideoEncoder("DEFAULT");
     }
     hbRecorder!!.isAudioEnabled(mic);
@@ -130,13 +147,15 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   override fun HBRecorderOnComplete() {
     println("HBRecorderOnComplete")
-    var uri = hbRecorder!!.filePath;
-    val response = WritableNativeMap();
-    val result =  WritableNativeMap();
-    result.putString("outputURL", uri);
-    response.putString("status", "success");
-    response.putMap("result", result);
-    stopPromise!!.resolve(response);
+    if (stopPromise != null) {
+      val uri = hbRecorder!!.filePath;
+      val response = WritableNativeMap();
+      val result = WritableNativeMap();
+      result.putString("outputURL", uri);
+      response.putString("status", "success");
+      response.putMap("result", result);
+      stopPromise!!.resolve(response);
+    }
   }
 
   override fun HBRecorderOnError(errorCode: Int, reason: String?) {

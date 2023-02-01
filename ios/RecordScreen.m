@@ -3,8 +3,6 @@
 
 @implementation RecordScreen
 
-const int DEFAULT_FPS = 30;
-
 - (NSDictionary *)errorResponse:(NSDictionary *)result;
 {
     NSDictionary *json = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -41,7 +39,7 @@ const int DEFAULT_FPS = 30;
     }
 }
 
-// H264は2または4の倍数の数値にしないと緑の縁が入ってしまうので、それを調整する関数
+// For H264, unless the value is a multiple of 2 or 4, a green border will appear, so a function to adjust it
 - (int) adjustMultipleOf2:(int)value;
 {
     if (value % 2 == 1) {
@@ -58,6 +56,8 @@ RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
     self.screenWidth = [RCTConvert int: config[@"width"]];
     self.screenHeight = [RCTConvert int: config[@"height"]];
     self.enableMic = [RCTConvert BOOL: config[@"mic"]];
+    self.bitrate = [RCTConvert int: config[@"bitrate"]];
+    self.fps = [RCTConvert int: config[@"fps"]];
 }
 
 RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
@@ -91,8 +91,8 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
     
     NSDictionary *compressionProperties = @{AVVideoProfileLevelKey         : AVVideoProfileLevelH264HighAutoLevel,
                                             AVVideoH264EntropyModeKey      : AVVideoH264EntropyModeCABAC,
-                                            AVVideoAverageBitRateKey       : @(1920 * 1080 * 114),
-                                            AVVideoMaxKeyFrameIntervalKey  : @60,
+                                            AVVideoAverageBitRateKey       : @(self.bitrate),
+                                            AVVideoMaxKeyFrameIntervalKey  : @(self.fps),
                                             AVVideoAllowFrameReorderingKey : @NO};
 
     NSLog(@"width: %d", [self adjustMultipleOf2:self.screenWidth]);
@@ -201,7 +201,6 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
                         NSDictionary *result = [NSDictionary dictionaryWithObject:self.writer.outputURL.absoluteString forKey:@"outputURL"];
                         resolve([self successResponse:result]);
                         
-                        //                    UISaveVideoAtPathToSavedPhotosAlbum(self.writer.outputURL.absoluteString, nil, nil, nil);
                         NSLog(@"finishWritingWithCompletionHandler: Recording stopped successfully. Cleaning up... %@", result);
                         self.audioInput = nil;
                         self.micInput = nil;

@@ -89,6 +89,15 @@ if (res) {
 }
 ```
 
+### Adjusting bitrate / frame rate
+
+```js
+RecordScreen.startRecording({ 
+  bitrate: 1024000, // default 236390400
+  fps: 24, // default 60
+})
+```
+
 ### Clean Sandbox
 
 ```js
