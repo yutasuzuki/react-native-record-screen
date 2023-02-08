@@ -7,7 +7,7 @@ A screen record module for React Native.
 - Support iOS >= 11.0 (Simulator is not work)
 
 - Support Android
-  - minSdkVersion = 26
+  - minSdkVersion = 21
   - compileSdkVersion = 29
   - targetSdkVersion = 29
   - use [HBRecorder](https://github.com/HBiSoft/HBRecorder)
@@ -92,7 +92,7 @@ if (res) {
 ### Adjusting bitrate / frame rate
 
 ```js
-RecordScreen.startRecording({ 
+RecordScreen.startRecording({
   bitrate: 1024000, // default 236390400
   fps: 24, // default 60
 })
