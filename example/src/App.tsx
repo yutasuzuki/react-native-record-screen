@@ -9,9 +9,10 @@ import {
   ScrollView,
   TouchableHighlight,
   Button,
+  Alert
 } from 'react-native';
 import Video from 'react-native-video';
-import RecordScreen from 'react-native-record-screen';
+import RecordScreen, { RecordingResult } from 'react-native-record-screen';
 
 export default function App() {
   const [uri, setUri] = useState<string>('');
@@ -24,22 +25,29 @@ export default function App() {
         console.warn(error)
       );
       console.log('res', res);
-      if (res) {
+      if (res?.status === 'success') {
         setUri(res.result.outputURL);
       }
     } else {
       setUri('');
       setRecording(true);
-      await RecordScreen.startRecording({ mic: false }).catch((error: any) => {
+      const res = await RecordScreen.startRecording({ mic: false, fps: 30, bitrate: 1024000 }).catch((error: any) => {
         console.warn(error);
         setRecording(false);
         setUri('');
       });
+
+      if (res === RecordingResult.PermissionError) {
+        Alert.alert(res);
+        setRecording(false);
+        setUri('');
+      }
     }
   };
 
   const _handleOnCleanSandbox = useCallback(() => {
     RecordScreen.clean();
+    setUri('');
   }, []);
 
   const btnStyle = useMemo(() => {
@@ -217,10 +225,10 @@ const styles = StyleSheet.create({
   },
   preview: {
     position: 'absolute',
-    right: 12,
+    right: 0,
     bottom: 116,
-    width: Dimensions.get('window').width / 2,
-    height: Dimensions.get('window').height / 3,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height / 3 * 2,
     zIndex: 1,
     padding: 8,
     backgroundColor: '#aaa',
