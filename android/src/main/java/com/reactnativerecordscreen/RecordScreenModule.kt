@@ -55,12 +55,12 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
         if (resultCode == AppCompatActivity.RESULT_OK) {
           hbRecorder!!.startScreenRecording(intent, resultCode, Activity());
         } else {
-          startPromise!!.reject("404", "cancel!!");
+          startPromise!!.resolve("permission_error");
         }
       } else {
         startPromise!!.reject("404", "cancel!");
       }
-      startPromise!!.resolve(true);
+      startPromise!!.resolve("started");
     }
   }
 
@@ -76,11 +76,28 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     screenWidth = if (readableMap.hasKey("width")) ceil(readableMap.getDouble("width")).toInt() else 0;
     screenHeight = if (readableMap.hasKey("height")) ceil(readableMap.getDouble("height")).toInt() else 0;
     mic =  if (readableMap.hasKey("mic")) readableMap.getBoolean("mic") else true;
+
     hbRecorder = HBRecorder(reactApplicationContext, this);
     hbRecorder!!.setOutputPath(outputUri.toString());
-    if(doesSupportEncoder("h264")){
+
+    // For FPS and bitrate we need to enable custom settings
+    if (readableMap.hasKey("fps") || readableMap.hasKey("bitrate")) {
+      hbRecorder!!.enableCustomSettings();
+
+      if (readableMap.hasKey("fps")) {
+        val fps = readableMap.getInt("fps");
+        hbRecorder!!.setVideoFrameRate(fps);
+      }
+      if (readableMap.hasKey("bitrate")) {
+        val bitrate = readableMap.getInt("bitrate");
+        hbRecorder!!.setVideoBitrate(bitrate);
+      }
+    }
+
+
+    if (doesSupportEncoder("h264")) {
       hbRecorder!!.setVideoEncoder("H264");
-    }else{
+    } else {
       hbRecorder!!.setVideoEncoder("DEFAULT");
     }
     hbRecorder!!.isAudioEnabled(mic);
@@ -133,7 +150,7 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     if (stopPromise != null) {
       val uri = hbRecorder!!.filePath;
       val response = WritableNativeMap();
-      val result =  WritableNativeMap();
+      val result = WritableNativeMap();
       result.putString("outputURL", uri);
       response.putString("status", "success");
       response.putMap("result", result);

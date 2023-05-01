@@ -1,6 +1,6 @@
 {
   "name": "react-native-record-screen",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -29,7 +29,10 @@
     "release": "release-it",
     "example": "yarn --cwd example",
     "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods"
+    "bootstrap": "yarn example && yarn && yarn pods",
+    "clean:ios": "del-cli example/ios/Pods example/ios/Podfile.lock",
+    "clean:android": "del-cli android/build example/android/build example/android/app/build example/android/.gradle",
+    "clean": "yarn clean:ios && yarn clean:android && del-cli node_modules example/node_modules"
   },
   "keywords": [
     "react-native",
@@ -54,6 +57,7 @@
     "@types/react": "^17.0.38",
     "@types/react-native": "^0.66.15",
     "commitlint": "^16.1.0",
+    "del-cli": "^5.0.0",
     "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
