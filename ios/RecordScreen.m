@@ -3,6 +3,8 @@
 
 @implementation RecordScreen
 
+UIBackgroundTaskIdentifier _backgroundRenderingID;
+
 - (NSDictionary *)errorResponse:(NSDictionary *)result;
 {
     NSDictionary *json = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -62,6 +64,12 @@ RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
 
 RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
 {
+    UIApplication *app = [UIApplication sharedApplication];
+    _backgroundRenderingID = [app beginBackgroundTaskWithExpirationHandler:^{
+        [app endBackgroundTask:_backgroundRenderingID];
+        _backgroundRenderingID = UIBackgroundTaskInvalid;
+    }];
+  
     self.screenRecorder = [RPScreenRecorder sharedRecorder];
     if (self.screenRecorder.isRecording) {
         return;
@@ -189,6 +197,8 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
 
 RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    [[UIApplication sharedApplication] endBackgroundTask:_backgroundRenderingID];
+  
     dispatch_async(dispatch_get_main_queue(), ^{
         if (@available(iOS 11.0, *)) {
             [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {
