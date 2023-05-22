@@ -16,5 +16,8 @@
 
     @property (nonatomic) AVAssetWriter *writer;
     @property BOOL encounteredFirstBuffer;
+    @property CMSampleBufferRef afterAppBackgroundAudioSampleBuffer;
+    @property CMSampleBufferRef afterAppBackgroundMicSampleBuffer;
+    @property CMSampleBufferRef afterAppBackgroundVideoSampleBuffer;
 
 @end
