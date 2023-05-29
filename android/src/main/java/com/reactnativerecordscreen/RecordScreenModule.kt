@@ -53,7 +53,7 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
       println(AppCompatActivity.RESULT_OK)
       if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
         if (resultCode == AppCompatActivity.RESULT_OK) {
-          hbRecorder!!.startScreenRecording(intent, resultCode, Activity());
+          hbRecorder!!.startScreenRecording(intent, resultCode);
         } else {
           startPromise!!.resolve("permission_error");
         }
@@ -164,6 +164,14 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
     println(errorCode)
     println("reason")
     println(reason)
+  }
+
+  override fun HBRecorderOnPause() {
+    println("HBRecorderOnPause")
+  }
+
+  override fun HBRecorderOnResume() {
+    println("HBRecorderOnResume")
   }
 
   private fun doesSupportEncoder(encoder: String): Boolean {
