@@ -69,34 +69,34 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
         [app endBackgroundTask:_backgroundRenderingID];
         _backgroundRenderingID = UIBackgroundTaskInvalid;
     }];
-  
+
     self.screenRecorder = [RPScreenRecorder sharedRecorder];
     if (self.screenRecorder.isRecording) {
         return;
     }
-    
+
     self.encounteredFirstBuffer = NO;
-    
+
     NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *outputURL = pathDocuments[0];
 
     NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random() % 1000]] stringByAppendingPathExtension:@"mp4"];
-    
+
     NSError *error;
     self.writer = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:videoOutPath] fileType:AVFileTypeMPEG4 error:&error];
     if (!self.writer) {
         NSLog(@"writer: %@", error);
         abort();
     }
-    
+
     AudioChannelLayout acl = { 0 };
     acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
     self.audioInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:@{ AVFormatIDKey: @(kAudioFormatMPEG4AAC), AVSampleRateKey: @(44100),  AVChannelLayoutKey: [NSData dataWithBytes: &acl length: sizeof( acl ) ], AVEncoderBitRateKey: @(64000)}];
     self.micInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:@{ AVFormatIDKey: @(kAudioFormatMPEG4AAC), AVSampleRateKey: @(44100),  AVChannelLayoutKey: [NSData dataWithBytes: &acl length: sizeof( acl ) ], AVEncoderBitRateKey: @(64000)}];
-    
+
     self.audioInput.preferredVolume = 0.0;
     self.micInput.preferredVolume = 0.0;
-    
+
     NSDictionary *compressionProperties = @{AVVideoProfileLevelKey         : AVVideoProfileLevelH264HighAutoLevel,
                                             AVVideoH264EntropyModeKey      : AVVideoH264EntropyModeCABAC,
                                             AVVideoAverageBitRateKey       : @(self.bitrate),
@@ -115,7 +115,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
     } else {
         // Fallback on earlier versions
     }
-    
+
     [self.writer addInput:self.audioInput];
     [self.writer addInput:self.micInput];
     [self.writer addInput:self.videoInput];
@@ -126,7 +126,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
     if (self.enableMic) {
         self.screenRecorder.microphoneEnabled = YES;
     }
-    
+
     [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
         if (granted) {
             if (@available(iOS 11.0, *)) {
@@ -141,9 +141,9 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                 [self.writer startWriting];
                                 [self.writer startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
                             } else if (self.writer.status == AVAssetWriterStatusFailed) {
-                                
+
                             }
-                            
+
                             if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
                                 CMSampleBufferRef copiedBuffer;
                                 CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &copiedBuffer);
@@ -165,11 +165,11 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                     CMTime timeWhenAppBackground = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(sampleBuffer), CMSampleBufferGetPresentationTimeStamp(self.afterAppBackgroundVideoSampleBuffer));
                                     // Calc loop count for appendSampleBuffer.
                                     long bufferCount = floor(CMTimeGetSeconds(timeWhenAppBackground) * (1 / CMTimeGetSeconds(CMSampleBufferGetDuration(self.afterAppBackgroundAudioSampleBuffer))));
-                                    
+
                                     // Make mute audio.
                                     [self muteAudioInBuffer:self.afterAppBackgroundAudioSampleBuffer];
                                     [self muteAudioInBuffer:self.afterAppBackgroundMicSampleBuffer];
-                                    
+
                                     for (int i = 0; i < bufferCount; i ++) {
                                         if (self.audioInput.isReadyForMoreMediaData) {
                                             [self.audioInput appendSampleBuffer:self.afterAppBackgroundAudioSampleBuffer];
@@ -180,7 +180,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                             [self.micInput appendSampleBuffer:self.afterAppBackgroundMicSampleBuffer];
                                         }
                                     }
-                                    
+
                                     // Clean
                                     CFRelease(self.afterAppBackgroundAudioSampleBuffer);
                                     CFRelease(self.afterAppBackgroundMicSampleBuffer);
@@ -190,7 +190,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                     self.afterAppBackgroundVideoSampleBuffer = nil;
                                 }
                             }
-                            
+
                             if (self.writer.status == AVAssetWriterStatusWriting) {
                                 switch (bufferType) {
                                     case RPSampleBufferTypeVideo:
@@ -221,7 +221,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                 }
                             }
                         }
-                        
+
                         CFRelease(sampleBuffer);
                     });
                 } completionHandler:^(NSError* error) {
@@ -249,7 +249,7 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
 RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     [[UIApplication sharedApplication] endBackgroundTask:_backgroundRenderingID];
-  
+
     dispatch_async(dispatch_get_main_queue(), ^{
         if (@available(iOS 11.0, *)) {
             [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {
@@ -258,10 +258,10 @@ RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecte
                     [self.micInput markAsFinished];
                     [self.videoInput markAsFinished];
                     [self.writer finishWritingWithCompletionHandler:^{
-                        
+
                         NSDictionary *result = [NSDictionary dictionaryWithObject:self.writer.outputURL.absoluteString forKey:@"outputURL"];
                         resolve([self successResponse:result]);
-                        
+
                         NSLog(@"finishWritingWithCompletionHandler: Recording stopped successfully. Cleaning up... %@", result);
                         self.audioInput = nil;
                         self.micInput = nil;
@@ -289,5 +289,13 @@ RCT_REMAP_METHOD(clean,
     resolve(@"cleaned");
 }
 
-@end
+// Don't compile this code when we build for the old architecture.
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+    return std::make_shared<facebook::react::NativeRecordScreenSpecJSI>(params);
+}
+#endif
 
+@end

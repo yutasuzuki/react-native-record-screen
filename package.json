@@ -1,6 +1,6 @@
 {
   "name": "react-native-record-screen",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -13,25 +13,29 @@
     "android",
     "ios",
     "cpp",
-    "react-native-record-screen.podspec",
+    "*.podspec",
     "!lib/typescript/example",
-    "!android/build",
     "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
     "!**/__tests__",
     "!**/__fixtures__",
-    "!**/__mocks__"
+    "!**/__mocks__",
+    "!**/.*"
   ],
   "scripts": {
     "test": "jest",
-    "typescript": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "prepare": "bob build",
+    "prepack": "bob build",
     "release": "release-it",
     "example": "yarn --cwd example",
-    "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods",
-    "clean:ios": "del-cli example/ios/Pods example/ios/Podfile.lock",
-    "clean:android": "del-cli android/build example/android/build example/android/app/build example/android/.gradle",
+    "bootstrap": "yarn example && yarn install && yarn example pods",
+    "clean:ios": "del-cli example/ios/Pods example/ios/Podfile.lock example/ios/build",
+    "clean:android": "del-cli android/build example/android/build example/android/app/build",
     "clean": "yarn clean:ios && yarn clean:android && del-cli node_modules example/node_modules"
   },
   "keywords": [
@@ -50,31 +54,38 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^16.0.0",
-    "@react-native-community/eslint-config": "^3.0.1",
-    "@release-it/conventional-changelog": "^4.1.0",
-    "@types/jest": "^27.4.0",
-    "@types/react": "^17.0.38",
-    "@types/react-native": "^0.66.15",
-    "commitlint": "^16.1.0",
+    "@evilmartians/lefthook": "^1.2.2",
+    "@commitlint/config-conventional": "^17.0.2",
+    "@react-native-community/eslint-config": "^3.0.2",
+    "@release-it/conventional-changelog": "^5.0.0",
+    "@types/jest": "^28.1.2",
+    "@types/react": "~17.0.21",
+    "@types/react-native": "0.70.0",
+    "commitlint": "^17.0.2",
     "del-cli": "^5.0.0",
-    "eslint": "^8.7.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
-    "jest": "^27.4.7",
-    "pod-install": "^0.1.31",
-    "prettier": "^2.5.1",
-    "react": "^17.0.2",
-    "react-native": "^0.67.1",
-    "react-native-builder-bob": "^0.18.2",
-    "release-it": "^14.12.4",
-    "typescript": "^4.5.5"
+    "jest": "^28.1.1",
+    "pod-install": "^0.1.0",
+    "prettier": "^2.0.5",
+    "react": "18.2.0",
+    "react-native": "0.72.0",
+    "react-native-builder-bob": "^0.20.0",
+    "release-it": "^15.0.0",
+    "typescript": "^5.0.2"
+  },
+  "resolutions": {
+    "@types/react": "17.0.21"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": "*"
   },
+  "engines": {
+    "node": ">= 16.0.0"
+  },
+  "packageManager": "^yarn@1.22.15",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [

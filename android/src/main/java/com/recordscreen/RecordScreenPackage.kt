@@ -1,4 +1,4 @@
-package com.reactnativerecordscreen
+package com.recordscreen
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
