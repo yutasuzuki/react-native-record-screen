@@ -6,7 +6,7 @@ export const RecordingResult = {
 } as const;
 
 export type RecordingStartResponse =
-  typeof RecordingResult[keyof typeof RecordingResult];
+  (typeof RecordingResult)[keyof typeof RecordingResult];
 
 export type RecordScreenConfigType = {
   fps?: number;

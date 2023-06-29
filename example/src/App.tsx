@@ -9,7 +9,7 @@ import {
   ScrollView,
   TouchableHighlight,
   Button,
-  Alert
+  Alert,
 } from 'react-native';
 import Video from 'react-native-video';
 import RecordScreen, { RecordingResult } from 'react-native-record-screen';
@@ -31,7 +31,11 @@ export default function App() {
     } else {
       setUri('');
       setRecording(true);
-      const res = await RecordScreen.startRecording({ mic: false, fps: 30, bitrate: 1024000 }).catch((error: any) => {
+      const res = await RecordScreen.startRecording({
+        mic: false,
+        fps: 30,
+        bitrate: 1024000,
+      }).catch((error: any) => {
         console.warn(error);
         setRecording(false);
         setUri('');
@@ -229,7 +233,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 116,
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height / 3 * 2,
+    height: (Dimensions.get('window').height / 3) * 2,
     zIndex: 1,
     padding: 8,
     backgroundColor: '#aaa',
