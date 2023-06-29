@@ -3,6 +3,8 @@
 
 @implementation RecordScreen
 
+UIBackgroundTaskIdentifier _backgroundRenderingID;
+
 - (NSDictionary *)errorResponse:(NSDictionary *)result;
 {
     NSDictionary *json = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -62,6 +64,12 @@ RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
 
 RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
 {
+    UIApplication *app = [UIApplication sharedApplication];
+    _backgroundRenderingID = [app beginBackgroundTaskWithExpirationHandler:^{
+        [app endBackgroundTask:_backgroundRenderingID];
+        _backgroundRenderingID = UIBackgroundTaskInvalid;
+    }];
+  
     self.screenRecorder = [RPScreenRecorder sharedRecorder];
     if (self.screenRecorder.isRecording) {
         return;
@@ -120,10 +128,12 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
     }
     
     [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (granted) {
-                if (@available(iOS 11.0, *)) {
-                    [self.screenRecorder startCaptureWithHandler:^(CMSampleBufferRef sampleBuffer, RPSampleBufferType bufferType, NSError* error) {
+        if (granted) {
+            if (@available(iOS 11.0, *)) {
+                [self.screenRecorder startCaptureWithHandler:^(CMSampleBufferRef sampleBuffer, RPSampleBufferType bufferType, NSError* error) {
+                    // Failure to do so will result in a memory error when accessing the sampleBuffer in the main thread.
+                    CFRetain(sampleBuffer);
+                    dispatch_async(dispatch_get_main_queue(), ^{
                         if (CMSampleBufferDataIsReady(sampleBuffer)) {
                             if (self.writer.status == AVAssetWriterStatusUnknown && !self.encounteredFirstBuffer && bufferType == RPSampleBufferTypeVideo) {
                                 self.encounteredFirstBuffer = YES;
@@ -132,6 +142,53 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                 [self.writer startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
                             } else if (self.writer.status == AVAssetWriterStatusFailed) {
                                 
+                            }
+                            
+                            if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground) {
+                                CMSampleBufferRef copiedBuffer;
+                                CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &copiedBuffer);
+                                switch (bufferType) {
+                                    case RPSampleBufferTypeVideo:
+                                        self.afterAppBackgroundVideoSampleBuffer = copiedBuffer;
+                                        break;
+                                    case RPSampleBufferTypeAudioApp:
+                                        self.afterAppBackgroundAudioSampleBuffer = copiedBuffer;
+                                        break;
+                                    case RPSampleBufferTypeAudioMic:
+                                        self.afterAppBackgroundMicSampleBuffer = copiedBuffer;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } else if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive) {
+                                if (bufferType == RPSampleBufferTypeVideo && self.afterAppBackgroundVideoSampleBuffer != nil && self.afterAppBackgroundAudioSampleBuffer != nil && self.afterAppBackgroundMicSampleBuffer != nil) {
+                                    CMTime timeWhenAppBackground = CMTimeSubtract(CMSampleBufferGetPresentationTimeStamp(sampleBuffer), CMSampleBufferGetPresentationTimeStamp(self.afterAppBackgroundVideoSampleBuffer));
+                                    // Calc loop count for appendSampleBuffer.
+                                    long bufferCount = floor(CMTimeGetSeconds(timeWhenAppBackground) * (1 / CMTimeGetSeconds(CMSampleBufferGetDuration(self.afterAppBackgroundAudioSampleBuffer))));
+                                    
+                                    // Make mute audio.
+                                    [self muteAudioInBuffer:self.afterAppBackgroundAudioSampleBuffer];
+                                    [self muteAudioInBuffer:self.afterAppBackgroundMicSampleBuffer];
+                                    
+                                    for (int i = 0; i < bufferCount; i ++) {
+                                        if (self.audioInput.isReadyForMoreMediaData) {
+                                            [self.audioInput appendSampleBuffer:self.afterAppBackgroundAudioSampleBuffer];
+                                        }
+                                    }
+                                    for (int i = 0; i < bufferCount; i ++) {
+                                        if (self.enableMic && self.micInput.isReadyForMoreMediaData) {
+                                            [self.micInput appendSampleBuffer:self.afterAppBackgroundMicSampleBuffer];
+                                        }
+                                    }
+                                    
+                                    // Clean
+                                    CFRelease(self.afterAppBackgroundAudioSampleBuffer);
+                                    CFRelease(self.afterAppBackgroundMicSampleBuffer);
+                                    CFRelease(self.afterAppBackgroundVideoSampleBuffer);
+                                    self.afterAppBackgroundAudioSampleBuffer = nil;
+                                    self.afterAppBackgroundMicSampleBuffer = nil;
+                                    self.afterAppBackgroundVideoSampleBuffer = nil;
+                                }
                             }
                             
                             if (self.writer.status == AVAssetWriterStatusWriting) {
@@ -164,22 +221,24 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
                                 }
                             }
                         }
-                    } completionHandler:^(NSError* error) {
-                        NSLog(@"startCapture: %@", error);
-                        if (error) {
-                            resolve(@"permission_error");
-                        } else {
-                            resolve(@"started");
-                        }
-                    }];
-                } else {
-                    // Fallback on earlier versions
-                }
+                        
+                        CFRelease(sampleBuffer);
+                    });
+                } completionHandler:^(NSError* error) {
+                    NSLog(@"startCapture: %@", error);
+                    if (error) {
+                        resolve(@"permission_error");
+                    } else {
+                        resolve(@"started");
+                    }
+                }];
             } else {
-                NSError* err = nil;
-                reject(0, @"Permission denied", err);
+                // Fallback on earlier versions
             }
-        });
+        } else {
+            NSError* err = nil;
+            reject(0, @"Permission denied", err);
+        }
     }];
 
     if (self.enableMic) {
@@ -189,6 +248,8 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
 
 RCT_REMAP_METHOD(stopRecording, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    [[UIApplication sharedApplication] endBackgroundTask:_backgroundRenderingID];
+  
     dispatch_async(dispatch_get_main_queue(), ^{
         if (@available(iOS 11.0, *)) {
             [[RPScreenRecorder sharedRecorder] stopCaptureWithHandler:^(NSError * _Nullable error) {
