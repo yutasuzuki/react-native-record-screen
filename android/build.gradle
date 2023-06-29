@@ -133,5 +133,5 @@ dependencies {
   // noinspection GradleDynamicVersion
   api 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation "com.github.HBiSoft:HBRecorder:2.0.3"
+  implementation "com.github.HBiSoft:HBRecorder:3.0.1"
 }
