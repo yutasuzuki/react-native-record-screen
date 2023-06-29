@@ -1,4 +1,4 @@
-package com.reactnativerecordscreen
+package com.recordscreen
 
 import android.app.Activity
 import android.app.Application
@@ -16,7 +16,6 @@ import com.hbisoft.hbrecorder.HBRecorderListener
 import java.io.File
 import java.io.IOException
 import kotlin.math.ceil
-
 
 class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), HBRecorderListener {
 
@@ -47,10 +46,6 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
 
   private val mActivityEventListener: ActivityEventListener = object : BaseActivityEventListener() {
     override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, intent: Intent?) {
-      println("resultCode")
-      println(resultCode)
-      println("AppCompatActivity.RESULT_OK")
-      println(AppCompatActivity.RESULT_OK)
       if (requestCode == SCREEN_RECORD_REQUEST_CODE) {
         if (resultCode == AppCompatActivity.RESULT_OK) {
           hbRecorder!!.startScreenRecording(intent, resultCode);
@@ -93,7 +88,6 @@ class RecordScreenModule(reactContext: ReactApplicationContext) : ReactContextBa
         hbRecorder!!.setVideoBitrate(bitrate);
       }
     }
-
 
     if (doesSupportEncoder("h264")) {
       hbRecorder!!.setVideoEncoder("H264");

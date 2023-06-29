@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     padding: 24,
+    backgroundColor: '#fff',
   },
   heading: {
     fontSize: 24,
