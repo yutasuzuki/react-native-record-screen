@@ -36,6 +36,10 @@ pod install
 npx pod-install
 ```
 
+Add ReplayKit.framework at Link Binary With Libraries
+
+![Add ReplayKit.framework at Link Binary With Libraries](https://user-images.githubusercontent.com/4530616/257236753-e3555d2f-53a5-4ffd-87eb-db1691d0552d.png)
+
 ### Android
 
 Add the permissions to your AndroidManifest.xml
