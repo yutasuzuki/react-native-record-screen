@@ -14,13 +14,13 @@ A screen record module for React Native.
 
 ## Installation
 
-### iOS
-
 ```sh
 npm install react-native-record-screen
 ```
 
-Add the permission strings to your Info.plist
+### iOS
+
+1. Add the permission strings to your Info.plist
 
 ```xml
 <key>NSCameraUsageDescription</key>
@@ -30,19 +30,19 @@ Add the permission strings to your Info.plist
 <string>Please allow use of microphone</string>
 ```
 
-pod install
+2. pod install
 
 ```sh
 npx pod-install
 ```
 
-Add ReplayKit.framework at Link Binary With Libraries
+3. Add ReplayKit.framework at Link Binary With Libraries
 
 ![Add ReplayKit.framework at Link Binary With Libraries](https://user-images.githubusercontent.com/4530616/257236753-e3555d2f-53a5-4ffd-87eb-db1691d0552d.png)
 
 ### Android
 
-Add the permissions to your AndroidManifest.xml
+1. Add the permissions to your AndroidManifest.xml
 
 ```xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
