@@ -1,5 +1,5 @@
 {
-  "name": "@pastel/react-native-record-screen",
+  "name": "@closetothe/react-native-record-screen",
   "version": "0.0.1",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
