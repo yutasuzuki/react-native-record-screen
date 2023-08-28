@@ -1,6 +1,6 @@
 {
   "name": "@closetothe/react-native-record-screen",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
