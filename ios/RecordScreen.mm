@@ -62,6 +62,81 @@ RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
     self.fps = [RCTConvert int: config[@"fps"]];
 }
 
+
+RCT_REMAP_METHOD(requestPermissions, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
+{
+    UIApplication *app = [UIApplication sharedApplication];
+    _backgroundRenderingID = [app beginBackgroundTaskWithExpirationHandler:^{
+        [app endBackgroundTask:_backgroundRenderingID];
+        _backgroundRenderingID = UIBackgroundTaskInvalid;
+    }];
+
+    self.screenRecorder = [RPScreenRecorder sharedRecorder];
+    if (self.screenRecorder.isRecording) {
+        return;
+    }
+
+    self.encounteredFirstBuffer = NO;
+
+    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *outputURL = pathDocuments[0];
+
+    NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random() % 1000]] stringByAppendingPathExtension:@"mp4"];
+
+    NSError *error;
+    self.writer = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:videoOutPath] fileType:AVFileTypeMPEG4 error:&error];
+    if (!self.writer) {
+        NSLog(@"writer: %@", error);
+        abort();
+    }
+
+    AudioChannelLayout acl = { 0 };
+    acl.mChannelLayoutTag = kAudioChannelLayoutTag_Stereo;
+    self.audioInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:@{ AVFormatIDKey: @(kAudioFormatMPEG4AAC), AVSampleRateKey: @(44100),  AVChannelLayoutKey: [NSData dataWithBytes: &acl length: sizeof( acl ) ], AVEncoderBitRateKey: @(320000), AVEncoderAudioQualityKey: @(127)}];
+    self.micInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:@{ AVFormatIDKey: @(kAudioFormatMPEG4AAC), AVSampleRateKey: @(44100),  AVChannelLayoutKey: [NSData dataWithBytes: &acl length: sizeof( acl ) ], AVEncoderBitRateKey: @(320000), AVEncoderAudioQualityKey: @(127)}];
+
+    self.audioInput.preferredVolume = 0.0;
+    self.micInput.preferredVolume = 0.0;
+
+    NSDictionary *compressionProperties = @{AVVideoProfileLevelKey         : AVVideoProfileLevelH264HighAutoLevel,
+                                            AVVideoH264EntropyModeKey      : AVVideoH264EntropyModeCABAC,
+                                            AVVideoAverageBitRateKey       : @(self.bitrate),
+                                            AVVideoMaxKeyFrameIntervalKey  : @(self.fps),
+                                            AVVideoAllowFrameReorderingKey : @NO};
+
+    NSLog(@"width: %d", [self adjustMultipleOf2:self.screenWidth]);
+    NSLog(@"height: %d", [self adjustMultipleOf2:self.screenHeight]);
+    if (@available(iOS 11.0, *)) {
+        NSDictionary *videoSettings = @{AVVideoCompressionPropertiesKey : compressionProperties,
+                                        AVVideoCodecKey                 : AVVideoCodecTypeH264,
+                                        AVVideoWidthKey                 : @([self adjustMultipleOf2:self.screenWidth]),
+                                        AVVideoHeightKey                : @([self adjustMultipleOf2:self.screenHeight])};
+
+        self.videoInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+    } else {
+        // Fallback on earlier versions
+    }
+
+    [self.writer addInput:self.audioInput];
+    [self.writer addInput:self.micInput];
+    [self.writer addInput:self.videoInput];
+    [self.videoInput setMediaTimeScale:60];
+    [self.writer setMovieTimeScale:60];
+    [self.videoInput setExpectsMediaDataInRealTime:YES];
+
+    if (self.enableMic) {
+        self.screenRecorder.microphoneEnabled = YES;
+    }
+
+    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+        if (granted) {
+            resolve(@"granted")
+        } else {
+            resolve(@"denied")
+        }
+    }];
+}
+
 RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
 {
     UIApplication *app = [UIApplication sharedApplication];

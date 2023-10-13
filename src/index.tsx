@@ -34,6 +34,7 @@ type RecordScreenNativeModule = {
   setup(
     config: RecordScreenConfigType & { width: number; height: number }
   ): void;
+  requestPermission(): Promise<'denied' | 'granted'>;
   startRecording(): Promise<RecordingStartResponse>;
   stopRecording(): Promise<RecordingResponse>;
   clean(): Promise<string>;
@@ -54,6 +55,10 @@ class ReactNativeRecordScreenClass {
       bitrate: 1920 * 1080 * 144,
       ...config,
     });
+  }
+
+  requestPermission() {
+    return RS.requestPermission();
   }
 
   startRecording(config: RecordScreenConfigType = {}) {
