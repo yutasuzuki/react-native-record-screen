@@ -63,7 +63,7 @@ RCT_EXPORT_METHOD(setup: (NSDictionary *)config)
 }
 
 
-RCT_REMAP_METHOD(requestPermissions, resolve:(RCTPromiseResolveBlock)resolve rejecte:(RCTPromiseRejectBlock)reject)
+RCT_REMAP_METHOD(requestPermissions, requestResolve:(RCTPromiseResolveBlock)resolve requestReject:(RCTPromiseRejectBlock)reject)
 {
     UIApplication *app = [UIApplication sharedApplication];
     _backgroundRenderingID = [app beginBackgroundTaskWithExpirationHandler:^{
@@ -130,9 +130,9 @@ RCT_REMAP_METHOD(requestPermissions, resolve:(RCTPromiseResolveBlock)resolve rej
 
     [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
         if (granted) {
-            resolve(@"granted")
+            resolve(@"granted");
         } else {
-            resolve(@"denied")
+            resolve(@"denied");
         }
     }];
 }

@@ -374,7 +374,7 @@ PODS:
   - React-jsinspector (0.72.0)
   - React-logger (0.72.0):
     - glog
-  - react-native-record-screen (0.6.0):
+  - react-native-record-screen (0.0.5):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-video (5.2.1):
@@ -700,7 +700,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 990287d74aedc4fdd08ebd80736b1a5c71b54da2
   React-jsinspector: 8d754fc957255a29d93e52fc67a895045cdc8703
   React-logger: 454ffb01980778a43b0153ee98721d0275b56616
-  react-native-record-screen: abc1c23577598fa2d576ade433706d6a8f7e4654
+  react-native-record-screen: 2fdf2c4d11a54363bced92ff124c206062577611
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   React-NativeModulesApple: 038cd625999ff352fc13d11fd335ea7509794599
   React-perflogger: 684a11499a0589cc42135d6d5cc04d0e4e0e261a
@@ -725,4 +725,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: ecc2815bd41817eeabc4f10f1f2a34740ceaac89
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1
