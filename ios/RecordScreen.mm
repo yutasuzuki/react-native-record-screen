@@ -78,10 +78,10 @@ RCT_REMAP_METHOD(requestPermissions, requestResolve:(RCTPromiseResolveBlock)reso
 
     self.encounteredFirstBuffer = NO;
 
-    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *outputURL = pathDocuments[0];
 
-    NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random() % 1000]] stringByAppendingPathExtension:@"mp4"];
+    NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random_uniform(1000000)]] stringByAppendingPathExtension:@"mp4"];
 
     NSError *error;
     self.writer = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:videoOutPath] fileType:AVFileTypeMPEG4 error:&error];
@@ -152,10 +152,10 @@ RCT_REMAP_METHOD(startRecording, resolve:(RCTPromiseResolveBlock)resolve rejecte
 
     self.encounteredFirstBuffer = NO;
 
-    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *outputURL = pathDocuments[0];
 
-    NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random() % 1000]] stringByAppendingPathExtension:@"mp4"];
+    NSString *videoOutPath = [[outputURL stringByAppendingPathComponent:[NSString stringWithFormat:@"%u", arc4random_uniform(1000000)]] stringByAppendingPathExtension:@"mp4"];
 
     NSError *error;
     self.writer = [AVAssetWriter assetWriterWithURL:[NSURL fileURLWithPath:videoOutPath] fileType:AVFileTypeMPEG4 error:&error];
@@ -353,7 +353,7 @@ RCT_REMAP_METHOD(clean,
                  cleanRejecte:(RCTPromiseRejectBlock)reject)
 {
 
-    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSArray *pathDocuments = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString *path = pathDocuments[0];
     NSLog(@"startCapture: %@", path);
     [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
