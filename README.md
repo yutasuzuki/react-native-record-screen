@@ -46,7 +46,6 @@ npx pod-install
 
 ```xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <!-- If you intend to use the microphone -->
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
