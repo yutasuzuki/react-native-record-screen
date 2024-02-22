@@ -7,10 +7,13 @@ A screen record module for React Native.
 - Support iOS >= 11.0 (Simulator is not work)
 
 - Support Android
+
   - minSdkVersion = 26
   - compileSdkVersion = 33
   - targetSdkVersion = 31
   - use [HBRecorder](https://github.com/HBiSoft/HBRecorder)
+
+- Support Expo by using [expo-record-screen-config-plugin](https://github.com/closetothe/expo-record-screen-config-plugin)
 
 ## Installation
 
@@ -56,10 +59,14 @@ npx pod-install
 ### Recording full screen
 
 ```js
-import RecordScreen, { RecordingStartResponse } from 'react-native-record-screen';
+import RecordScreen, {
+  RecordingStartResponse,
+} from 'react-native-record-screen';
 
 // recording start
-const res = RecordScreen.startRecording().catch((error) => console.error(error));
+const res = RecordScreen.startRecording().catch((error) =>
+  console.error(error)
+);
 if (res === RecordingStartResponse.PermissionError) {
   // user denies access
 }
@@ -98,7 +105,7 @@ if (res) {
 RecordScreen.startRecording({
   bitrate: 1024000, // default 236390400
   fps: 24, // default 60
-})
+});
 ```
 
 ### Clean Sandbox

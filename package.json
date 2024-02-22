@@ -1,6 +1,6 @@
 {
-  "name": "react-native-record-screen",
-  "version": "0.6.1",
+  "name": "@closetothe/react-native-record-screen",
+  "version": "0.0.7",
   "description": "react-native-record-screen",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -43,19 +43,20 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/yutasuzuki/react-native-record-screen",
-  "author": "Yuta Suzuki <yutasuzuki.r@gmail.com> (https://github.com/yutasuzuki)",
+  "repository": "https://github.com/closettothe/react-native-record-screen",
+  "author": "Jamiel Rahi <app.gildew@gmail.com> (https://github.com/closetothe)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yutasuzuki/react-native-record-screen/issues"
+    "url": "https://github.com/closetothe/react-native-record-screen/issues"
   },
-  "homepage": "https://github.com/yutasuzuki/react-native-record-screen#readme",
+  "homepage": "https://github.com/closetothe/react-native-record-screen#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
-    "@evilmartians/lefthook": "^1.2.2",
     "@commitlint/config-conventional": "^17.0.2",
+    "@evilmartians/lefthook": "^1.2.2",
     "@react-native-community/eslint-config": "^3.0.2",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "^28.1.2",
@@ -72,7 +73,7 @@
     "react": "18.2.0",
     "react-native": "0.72.0",
     "react-native-builder-bob": "^0.20.0",
-    "release-it": "^15.0.0",
+    "release-it": "^16.1.5",
     "typescript": "^5.0.2"
   },
   "resolutions": {
