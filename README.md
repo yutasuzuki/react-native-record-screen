@@ -56,11 +56,11 @@ npx pod-install
 ### Recording full screen
 
 ```js
-import RecordScreen, { RecordingStartResponse } from 'react-native-record-screen';
+import RecordScreen, { RecordingResult } from 'react-native-record-screen';
 
 // recording start
 const res = RecordScreen.startRecording().catch((error) => console.error(error));
-if (res === RecordingStartResponse.PermissionError) {
+if (res === RecordingResult.PermissionError) {
   // user denies access
 }
 
