@@ -8,8 +8,8 @@ A screen record module for React Native.
 
 - Support Android
   - minSdkVersion = 26
-  - compileSdkVersion = 33
-  - targetSdkVersion = 31
+  - compileSdkVersion = 34
+  - targetSdkVersion = 34
   - use [HBRecorder](https://github.com/HBiSoft/HBRecorder)
 
 ## Installation
